@@ -1,12 +1,15 @@
-import { Attributes } from "../typings/modelDescription";
+import { Attributes } from "../../typings/modelDescription";
+import { AnyObject } from "../../typings/utils";
 
 interface Props {
   attributes: Attributes,
-  data: any[],
+  data: AnyObject[],
 };
 
 
 const Table: React.FC<Props> = ({ data, attributes }) => {
+
+  if(data.length === 0) return <h3>No data</h3>
 
   return (
     <table>
@@ -19,7 +22,9 @@ const Table: React.FC<Props> = ({ data, attributes }) => {
         return (
           <tr key={line.id}>
             {Object.keys(line).map((k) => (
-              <td key={k}>{line[k]}</td>
+              <td key={k}>
+                {line[k]}
+              </td>
             ))}
           </tr>
         );

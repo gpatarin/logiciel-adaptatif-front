@@ -1,0 +1,14 @@
+.container {
+  display: flex;
+  width: 100%;
+  justify-content: stretch;
+}
+
+.modelList {
+  width: 50%;
+  height: 100%;
+}
+
+.modelForm {
+  width: 50%;
+}

@@ -1,3 +1,1 @@
-export interface AnyObject {
-  [k: string]: any,
-}
+export type AnyObject = Record<string, any>;
