@@ -16,4 +16,8 @@ async function update<T>(path: string, body: T) {
   return (await API.post(path, body)).data;
 }
 
-export default { create, readAll, read, update };
+async function remove(path: string, id: string) {
+  return (await API.delete(`${path}/${id}`)).data;
+}
+
+export default { create, readAll, read, update, remove };

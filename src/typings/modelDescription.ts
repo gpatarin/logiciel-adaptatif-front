@@ -1,17 +1,17 @@
 
-type AttributesType = "string" | "string[]" | "int" | "double" | "boolean" | "date" | "list"
+export type AttributesType = "string" | "string[]" | "int" | "double" | "boolean" | "date" | "image"
 
-export interface IAttribute {
+export interface IAttribute<T extends string> {
   name: string,
-  type: AttributesType,
+  type: T,
 }
 
-export interface IAttributeTypeList extends IAttribute {
+export interface IAttributeTypeList extends IAttribute<"list"> {
   type: "list",
   model: IModel,
 }
-
-export type Attributes = (IAttribute | IAttributeTypeList)[]
+export type Attribute = IAttribute<AttributesType> | IAttributeTypeList
+export type Attributes = Attribute[]
 
 export interface IModel {
   name: string,

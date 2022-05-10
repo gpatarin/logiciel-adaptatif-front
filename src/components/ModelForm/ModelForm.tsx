@@ -1,9 +1,10 @@
-import React, { ChangeEvent, DetailedHTMLProps, EventHandler, FormEvent, InputHTMLAttributes, useCallback, useEffect, useState } from 'react';
-import { Attributes } from '../../typings/modelDescription';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { Attribute } from '../../typings/modelDescription';
 import { AnyObject } from '../../typings/utils';
+import { getBase64 } from '../../utils/files';
 
 interface Props {
-  attributes: Attributes,
+  attributes: Attribute[],
   data: AnyObject,
   visible: boolean,
   onClose: () => void,
@@ -33,6 +34,41 @@ const ModelForm: React.FC<Props> = (
     });
   }
 
+  const handleImage = (name: string) => (event: ChangeEvent<HTMLInputElement>) => {
+    if(event.target.files) {
+      const file = event.target.files[0];
+      getBase64(file, (b64) => {
+        setFormData((prev) => {
+          const temp = { ...prev };
+          temp[name] = b64;
+          return temp;
+        });
+      });
+    }
+  }
+
+  const generateInput = useCallback(({ name, type }: Attribute) => {
+    switch (type) {
+      case 'string':
+        return <input type="text" value={formData[name]} onChange={handleChange(name,)} />;
+      case 'int':
+        return <input type="number" step="1" value={formData[name]} onChange={handleChange(name)} />;
+      case 'double':
+        return <input type="number" min={0} step="0.01" value={formData[name]} onChange={handleChange(name)} />;
+      case 'boolean':
+        return <input type="checkbox" value={formData[name]} onChange={handleChange(name)} />;
+      case 'image':
+        return (
+                <>
+                  <input type="file" onChange={handleImage(name)} />
+                  {formData[name] && <img width="50px" src={formData[name]} />}
+                </>
+              );
+      default:
+        return <div>type Not implemented</div>
+    }
+  }, [formData])
+
   if(!visible) return null;
 
   return (
@@ -46,7 +82,7 @@ const ModelForm: React.FC<Props> = (
             <div key={name}>
               <label>
                 {name}
-                <input name={name} type={type} onChange={handleChange(name)} />
+                {generateInput({ name, type })}
               </label>
               <br />
             </div>

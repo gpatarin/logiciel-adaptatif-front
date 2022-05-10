@@ -10,6 +10,7 @@ import styles from './ModelPage.module.css';
 
 const ModelPage: React.FC = () => {
   const [model, setModel] = useState<IModel>();
+  const [uri, setUri] = useState<string>();
   const [data, setData] = useState<AnyObject[] | null>(null);
   const [formVisible, setFormVisible] = useState<boolean>(false);
   const [selected, setSelected] = useState<AnyObject | null>(null);
@@ -17,17 +18,43 @@ const ModelPage: React.FC = () => {
   const { models } = useContext(ModelsContext);
   const { model: modelName } = useParams();
 
+
   useEffect(() => {
     if(modelName && Object.keys(models).length > 0) {
-      setModel(models[modelName.charAt(0).toUpperCase() + modelName.slice(1)]);
+      const parsed = modelName.split(':');
+      const rootModel = parsed[0].charAt(0).toUpperCase() + parsed[0].slice(1);
+      let currentModel = models[rootModel];
+
+      parsed.splice(0, 1)
+
+      parsed.forEach((m, index) => {
+        if(index % 2 !== 0) {
+          const model = currentModel;
+
+          const attribute = model.attributes.find((attr) => {
+            if(attr.type === 'list') {
+              return attr.model.name === m;
+            }
+            return false;
+          });
+
+          if(attribute && attribute.type === 'list') {
+            currentModel = attribute.model;
+          }
+        }
+      });
+
+      setUri(modelName.replaceAll(':', '/'));
+      setModel(currentModel);
+      setData([]);
     }
   }, [models, modelName]);
 
   useEffect(() => {
-    if(model) {
-      rest.readAll(model.name).then(setData);
+    if(uri) {
+      rest.readAll(uri).then(setData);
     }
-  }, [model]);
+  }, [uri]);
 
   const handleClose = useCallback(() => {
     setFormVisible(false);
@@ -55,13 +82,30 @@ const ModelPage: React.FC = () => {
 
   const handleEdit = useCallback((selected: AnyObject) => {
     setSelected(selected)
-  }, []);
+    openForm();
+  }, [openForm]);
+
+  const handleDelete = useCallback((id) => {
+    if(model) {
+      rest.remove(model.name, id)
+      .then(() => {
+        rest.readAll(model.name).then(setData);
+      });
+    }
+  }, [model]);
 
   const handleSubmit = useCallback((data) => {
     if(model) {
-      rest.create(model.name, data)
-      .then(() => (rest.readAll(model.name)))
-      .then(setData)
+      if(data.id) {
+        rest.update(model.name, data).then(() => {
+          rest.readAll(model.name).then(setData);
+        });
+      } else {
+        rest.create(model.name, data)
+          .then(() => (rest.readAll(model.name)))
+          .then(setData);
+      }
+
       setFormVisible(false);
       setSelected(null);
     }
@@ -79,6 +123,7 @@ const ModelPage: React.FC = () => {
             attributes={model.attributes}
             data={data}
             onEdit={handleEdit}
+            onDelete={handleDelete}
           />
         </div>
       )}
