@@ -26,14 +26,17 @@ const Table: React.FC<Props> = ({ data, attributes, onEdit, onDelete }) => {
   }, []);
 
   const renderLine = (line: AnyObject) => {
-    return Object.keys(line).map((k, index) => {
+    return attributes.map((k, index) => {
       const attribute = attributes[index];
-      const value = line[k];
+      const value = line[k.name];
+
       switch (attribute.type) {
         case 'list':
-          return (<td key={k}><Link to={`/${model}:${line.id}:${attribute.model.name}`}><img src={list} /></Link></td>)
+          return (<td key={k.name}><Link to={`/${model}:${line.id}:${attribute.model.name}`}><img src={list} /></Link></td>)
+        case 'boolean':
+          return (<td key={k.name}><input type="checkbox" disabled checked={value} /></td>)
         default:
-          return (<td key={k}>{value}</td>);
+          return (<td key={k.name}>{value}</td>);
       }
     });
   }
@@ -48,15 +51,15 @@ const Table: React.FC<Props> = ({ data, attributes, onEdit, onDelete }) => {
         </tr>
       </thead>
       <tbody>
-        {data.map((line) => {
+        {data.map((line, index) => {
           return (
-            <tr key={line.id}>
+            <tr key={line.id || index}>
               {renderLine(line)}
               <td>
                 <img src={pencil} onClick={handleEdit(line)} />
               </td>
               <td>
-                <img src={bin} onClick={handleDelete(line.id)} />
+                <img src={bin} onClick={handleDelete(line.id || index)} />
               </td>
             </tr>
           );

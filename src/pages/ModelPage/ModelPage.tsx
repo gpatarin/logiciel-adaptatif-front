@@ -86,30 +86,30 @@ const ModelPage: React.FC = () => {
   }, [openForm]);
 
   const handleDelete = useCallback((id) => {
-    if(model) {
-      rest.remove(model.name, id)
+    if(model && uri) {
+      rest.remove(uri, id)
       .then(() => {
-        rest.readAll(model.name).then(setData);
+        rest.readAll(uri).then(setData);
       });
     }
-  }, [model]);
+  }, [model, uri]);
 
   const handleSubmit = useCallback((data) => {
-    if(model) {
+    if(model && uri) {
       if(data.id) {
-        rest.update(model.name, data).then(() => {
-          rest.readAll(model.name).then(setData);
+        rest.update(uri, data).then(() => {
+          rest.readAll(uri).then(setData);
         });
       } else {
-        rest.create(model.name, data)
-          .then(() => (rest.readAll(model.name)))
+        rest.create(uri, data)
+          .then(() => (rest.readAll(uri)))
           .then(setData);
       }
 
       setFormVisible(false);
       setSelected(null);
     }
-  }, [model])
+  }, [model, uri])
 
   return (
     <div className={styles.container}>
