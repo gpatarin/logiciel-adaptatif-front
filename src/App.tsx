@@ -1,44 +1,32 @@
-import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import { useMemo, useEffect, useState } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import getModels from './api/resolver/resolver';
+import ModelsContext from './context/modelsContext';
+import ModelPage from './pages/ModelPage';
+import RootPage from './pages/RootPage';
+import { IModelDescription } from './typings/modelDescription';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [models, setModels] = useState<IModelDescription>({});
+
+  useEffect(() => {
+    getModels().then((data) => {
+      setModels(data);
+    })
+  }, []);
+
+  const contextValue = useMemo(() => ({models}), [models])
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
-    </div>
+    <ModelsContext.Provider value={contextValue}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<RootPage />}>
+            <Route path='/:model' element={<ModelPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ModelsContext.Provider>
   )
 }
 
